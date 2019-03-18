@@ -1,0 +1,20 @@
+{
+  "name": "farm-peer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/inkandswitch/farm-peer.git",
+  "author": "Jeff Peterson <jeff@yak.sh>, Peter van Hardenberg <pvh@pvh.ca>, Matt Tognetti <mjtognetti@gmail.com>",
+  "license": "BSD",
+  "private": true,
+  "scripts": {
+      "compile": "tsc -p ."
+  },
+  "dependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/node": "^11.11.3",
+    "commander": "^2.19.0",
+    "hypermerge": "github:automerge/hypermerge#fork",
+    "ts-node": "^8.0.3",
+    "typescript": "^3.3.3333"
+  }
+}
