@@ -25,7 +25,7 @@ export function iterativeDFS<T>(root: any, select: SelectFn<T>): T[] {
     const obj = stack.pop()
     if (isPlainObject(obj)) {
       Object.entries(obj).forEach((entry: any) => stack.push(entry))
-    } else if (obj.forEach) {
+    } else if (obj && obj.forEach) {
       obj.forEach((val: any) => stack.push(val))
     } else if (select(obj)) {
       results.push(obj)
