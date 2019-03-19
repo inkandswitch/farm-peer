@@ -2,6 +2,8 @@ import { Repo, Handle } from "hypermerge/dist"
 import * as Traverse from "./Traverse"
 import * as Url from "./Url"
 
+const debug = require('debug')('farm-peer')
+
 
 // TODO: Inspect blocks for links rather than traversing the doc.
 // We currently re-traverse documents on every update. We could instead
@@ -20,7 +22,7 @@ export class FarmPeer {
         // assume a valid url
         if (!this.handles[url]) {
             // Is there a better way to ensure availability besides opening?
-            console.log(`Swarming on ${url}`)
+            debug(`Swarming on ${url}`)
             const handle = this.repo.open(url)
             this.handles[url] = handle
             // We don't need to subscribe to hyperfile updates, we just need to swarm
