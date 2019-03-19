@@ -19,7 +19,7 @@
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "discovery-cloud-client": "github:inkandswitch/discovery-cloud-client",
-    "hypermerge": "github:automerge/hypermerge#fork",
+    "hypermerge": "github:automerge/hypermerge#4ee483f5c7b9d5870d315258042d71ae4ee22698",
     "lodash": "^4.17.11",
     "mime-types": "^2.1.22",
     "random-access-file": "^2.1.0",
