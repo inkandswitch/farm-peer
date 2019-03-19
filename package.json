@@ -7,13 +7,20 @@
   "license": "BSD",
   "private": true,
   "scripts": {
-      "compile": "tsc -p ."
+    "farm-peer": "yarn build && node ./dist/index.js",
+    "build": "tsc -p ."
   },
   "dependencies": {
     "@types/commander": "^2.12.2",
+    "@types/lodash": "^4.14.123",
+    "@types/mime-types": "^2.1.0",
     "@types/node": "^11.11.3",
     "commander": "^2.19.0",
+    "discovery-cloud-client": "github:inkandswitch/discovery-cloud-client",
     "hypermerge": "github:automerge/hypermerge#fork",
+    "lodash": "^4.17.11",
+    "mime-types": "^2.1.22",
+    "random-access-file": "^2.1.0",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.3333"
   }

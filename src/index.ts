@@ -1,19 +1,46 @@
+import { Repo } from "hypermerge/dist/Repo"
+import raf from "random-access-file"
+//import discoverySwarm from "discovery-swarm"
+//import datDefaults from "dat-swarm-defaults
+import discoveryCloud from "discovery-cloud-client"
+import * as FarmPeer from "./FarmPeer"
+import * as Url from "./Url"
+
+
+let rootDataUrl: string | undefined
+
+// Program config
 const program = require("commander")
-
-let rootDataUrl
-
 program
     .description("A cloud peer for farm to keep data warm while your computer is sleeping.")
     .arguments('<rootDataUrl>')
-    .action((dataUrl?: String) => {
+    .action((dataUrl?: string) => {
         rootDataUrl = dataUrl
     })
     .parse(process.argv)
 
 // TODO: validate hypermerge url
-if (typeof rootDataUrl === "undefined") {
-    console.error("Must provide a valid root data url")
-    process.exit(1)
+// typeof check to satisfy Typescript.
+if (typeof rootDataUrl === "undefined" || !Url.isUrl(rootDataUrl)) {
+    throw new Error("Must provide a valid root data url")
 }
 
-console.log(rootDataUrl)
+
+// Repo init
+const storagePath = process.env.REPO_ROOT || "./.data"
+const repo = new Repo({ storage: raf, path: storagePath })
+repo.replicate(
+    /*discoverySwarm(
+      datDefaults({
+        port: 0,
+        id: repo.id,
+        stream: repo.stream,
+      }),
+    ),*/
+    new discoveryCloud({url: "wss://discovery-cloud.herokuapp.com", id: repo.id, stream: repo.stream})
+)
+
+
+// FarmPeer init
+const farmPeer = new FarmPeer.FarmPeer(repo)
+farmPeer.ensureDocumentIsSwarmed(rootDataUrl)
