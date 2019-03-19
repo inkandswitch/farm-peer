@@ -19,18 +19,18 @@ export class FarmPeer {
     }
 
     ensureDocumentIsSwarmed = (url: string) => {
-        // assume a valid url
         if (!this.handles[url]) {
             // Is there a better way to ensure availability besides opening?
             if (Url.isHypermergeUrl(url)) {
                 debug(`Swarming on ${url}`)
                 const handle = this.repo.open(url)
                 this.handles[url] = handle
-                // We don't need to subscribe to hyperfile updates, we just need to swarm
                 // The `subscribe` callback may be invoked immediately,
                 // so use setImmediate to prevent locking on deep structures.
                 setImmediate(() => handle.subscribe(this.onDocumentUpdate))
             } else if (Url.isHyperfileUrl(url)) {
+                // TODO: `readFile`?
+                // We don't need to subscribe to hyperfile updates, we just need to swarm
                 debug(`Passing over hyperfile ${url}`)
             }
         }
