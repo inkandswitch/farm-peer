@@ -6,7 +6,6 @@ import discoveryCloud from "discovery-cloud-client"
 import * as FarmPeer from "./FarmPeer"
 import * as HyperUrl from "./HyperUrl"
 
-
 let rootDataUrl: string | undefined
 
 // Program config
@@ -18,6 +17,7 @@ program
         rootDataUrl = dataUrl
     })
     .parse(process.argv)
+
 
 // TODO: validate hypermerge url
 // typeof check to satisfy Typescript.

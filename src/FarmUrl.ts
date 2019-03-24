@@ -30,7 +30,7 @@ export function parse(url: string): Pair {
         throw new Error(`Invalid farm url: ${url}`)
     }
     return {
-        code: HyperUrl.fromId(code),
-        data: HyperUrl.fromId(data)
+        code: HyperUrl.fromDocumentId(code),
+        data: HyperUrl.fromDocumentId(data)
     }
 }

@@ -32,7 +32,7 @@ export class FarmPeer {
         // Handle hypermerge and hyperfile urls
         else if (!this.handles[url] && !this.files.has(url)) {
             // Is there a better way to ensure availability besides opening?
-            if (HyperUrl.isHypermergeUrl(url)) {
+            if (HyperUrl.isDocumentUrl(url)) {
                 debug(`Opening document ${url}`)
                 const handle = this.repo.open(url)
                 this.handles[url] = handle
