@@ -12,26 +12,30 @@ const debug = require('debug')('farm-peer')
 export class FarmPeer {
     repo: Repo
     handles: { [url: string]: Handle<any> }
+    files: Set<string>
 
     constructor(repo: Repo) {
         this.repo = repo
         this.handles = {}
+        this.files = new Set()
     }
 
     ensureDocumentIsSwarmed = (url: string) => {
-        if (!this.handles[url]) {
+        if (!this.handles[url] && !this.files.has(url)) {
             // Is there a better way to ensure availability besides opening?
             if (Url.isHypermergeUrl(url)) {
-                debug(`Swarming on ${url}`)
+                debug(`Opening document ${url}`)
                 const handle = this.repo.open(url)
                 this.handles[url] = handle
                 // The `subscribe` callback may be invoked immediately,
                 // so use setImmediate to prevent locking on deep structures.
                 setImmediate(() => handle.subscribe(this.onDocumentUpdate))
             } else if (Url.isHyperfileUrl(url)) {
-                // TODO: `readFile`?
                 // We don't need to subscribe to hyperfile updates, we just need to swarm
-                debug(`Passing over hyperfile ${url}`)
+                this.files.add(url)
+                setImmediate(() => this.repo.readFile(url, (data, mimetype) => {
+                    debug(`Read file ${url}`)
+                }))
             }
         }
     }
@@ -39,6 +43,13 @@ export class FarmPeer {
     onDocumentUpdate = (doc: any) => {
         const urls = Traverse.iterativeDFS<string>(doc, Url.isUrl)
         urls.forEach(this.ensureDocumentIsSwarmed)
+    }
+
+    isSwarming = (url: string): boolean => {
+        // TODO: Shouldn't have to figure out the discovery key here, hypermerge should do it.
+        const discoveryKey = Url.toDiscoveryKey(url)
+        // TODO: repo should expose an interface for this.
+        return this.repo.back.joined.has(discoveryKey)
     }
 
     close = () => {

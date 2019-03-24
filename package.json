@@ -8,14 +8,17 @@
   "private": true,
   "scripts": {
     "farm-peer": "yarn build && node ./dist/index.js",
+    "farm-peer-inspect": "yarn build && node --inspect-brk ./dist/index.js",
     "build": "tsc -p ."
   },
   "dependencies": {
+    "@types/bs58": "^4.0.0",
     "@types/commander": "^2.12.2",
     "@types/debug": "^4.1.2",
     "@types/lodash": "^4.14.123",
     "@types/mime-types": "^2.1.0",
     "@types/node": "^11.11.3",
+    "bs58": "^4.0.1",
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "discovery-cloud-client": "github:inkandswitch/discovery-cloud-client",
