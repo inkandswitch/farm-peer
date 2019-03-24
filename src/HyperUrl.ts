@@ -1,9 +1,10 @@
 import { isString } from "lodash"
 import * as hypercore from "hypermerge/dist/hypercore"
 import * as Base58 from "bs58"
-import * as URL from "url"
 
 // TODO: All of this logic should be in hypermerge
+const documentRegex = /^hypermerge:\/(\w+)$/
+const hyperfileRegex = /^hyperfile:\/(?:\/\/)?(\w+)$/
 
 
 export const isHyperUrl = (val: any) => {
@@ -11,27 +12,18 @@ export const isHyperUrl = (val: any) => {
 }
 
 export const isDocumentUrl = (val: string) => {
-    try {
-        const url = new URL.URL(val)
-        return url.protocol == 'hypermerge:'
-    } catch {
-        return false
-    }
+    return documentRegex.test(val)
 }
 
 export const isHyperfileUrl = (val: string) => {
-    try {
-        const url = new URL.URL(val)
-        return url.protocol == 'hyperfile:'
-    } catch {
-        return false
-    }
+    return hyperfileRegex.test(val)
 }
 
-// Assumes valid hyper url, document or file.
+// Assumes valid hyper url, hypermerge: or hyperfile:.
 export const toId = (val: string) => {
-    const url = new URL.URL(val)
-    return url.pathname.slice(1)
+    const regex = isDocumentUrl(val) ? documentRegex : hyperfileRegex
+    const [, id]: Array<string | undefined> = val.match(regex) || []
+    return id
 }
 
 export const fromDocumentId = (id: string) => {

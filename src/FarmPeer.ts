@@ -12,13 +12,21 @@ const debug = require('debug')('farm-peer')
 // seen them.
 export class FarmPeer {
     repo: Repo
-    handles: { [url: string]: Handle<any> }
+    handles: Map<string, Handle<any>>
     files: Set<string>
 
     constructor(repo: Repo) {
         this.repo = repo
-        this.handles = {}
+        this.handles = new Map()
         this.files = new Set()
+    }
+
+    get stats() {
+        return {
+            documents: this.handles.size,
+            files: this.files.size,
+            joined: this.repo.back.joined.size
+        }
     }
 
     swarm = (url: string) => {
@@ -30,12 +38,12 @@ export class FarmPeer {
             this.swarm(data)
         }
         // Handle hypermerge and hyperfile urls
-        else if (!this.handles[url] && !this.files.has(url)) {
+        else if (!this.handles.has(url) && !this.files.has(url)) {
             // Is there a better way to ensure availability besides opening?
             if (HyperUrl.isDocumentUrl(url)) {
                 debug(`Opening document ${url}`)
                 const handle = this.repo.open(url)
-                this.handles[url] = handle
+                this.handles.set(url, handle)
                 // The `subscribe` callback may be invoked immediately,
                 // so use setImmediate to prevent locking on deep structures.
                 setImmediate(() => handle.subscribe(this.onDocumentUpdate))
@@ -66,6 +74,8 @@ export class FarmPeer {
     }
 
     close = () => {
-        Object.values(this.handles).forEach(handle => handle.close())
+        this.handles.forEach(handle => handle.close())
+        this.handles.clear()
+        this.files.clear()
     }
 }

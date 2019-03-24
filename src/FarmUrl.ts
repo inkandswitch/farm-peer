@@ -1,4 +1,3 @@
-import { isString } from "lodash"
 import * as HyperUrl from "./HyperUrl"
 
 
