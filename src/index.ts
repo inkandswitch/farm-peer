@@ -4,7 +4,7 @@ import raf from "random-access-file"
 //import datDefaults from "dat-swarm-defaults
 import discoveryCloud from "discovery-cloud-client"
 import * as FarmPeer from "./FarmPeer"
-import * as Url from "./Url"
+import * as HyperUrl from "./HyperUrl"
 
 
 let rootDataUrl: string | undefined
@@ -21,7 +21,7 @@ program
 
 // TODO: validate hypermerge url
 // typeof check to satisfy Typescript.
-if (typeof rootDataUrl === "undefined" || !Url.isUrl(rootDataUrl)) {
+if (typeof rootDataUrl === "undefined" || !HyperUrl.isHyperUrl(rootDataUrl)) {
     throw new Error("Must provide a valid root data url")
 }
 
@@ -44,4 +44,4 @@ repo.replicate(
 // FarmPeer init
 
 const farmPeer = new FarmPeer.FarmPeer(repo)
-farmPeer.ensureDocumentIsSwarmed(rootDataUrl)
+farmPeer.swarm(rootDataUrl)

@@ -1,6 +1,7 @@
 import { Repo, Handle } from "hypermerge/dist"
 import * as Traverse from "./Traverse"
-import * as Url from "./Url"
+import * as HyperUrl from "./HyperUrl"
+import * as FarmUrl from "./FarmUrl"
 
 const debug = require('debug')('farm-peer')
 
@@ -20,17 +21,25 @@ export class FarmPeer {
         this.files = new Set()
     }
 
-    ensureDocumentIsSwarmed = (url: string) => {
-        if (!this.handles[url] && !this.files.has(url)) {
+    swarm = (url: string) => {
+        // Handle farm urls
+        if (FarmUrl.isFarmUrl(url)) {
+            debug(`Parsing farm url ${url}`)
+            const { code, data } = FarmUrl.parse(url)
+            this.swarm(code)
+            this.swarm(data)
+        }
+        // Handle hypermerge and hyperfile urls
+        else if (!this.handles[url] && !this.files.has(url)) {
             // Is there a better way to ensure availability besides opening?
-            if (Url.isHypermergeUrl(url)) {
+            if (HyperUrl.isHypermergeUrl(url)) {
                 debug(`Opening document ${url}`)
                 const handle = this.repo.open(url)
                 this.handles[url] = handle
                 // The `subscribe` callback may be invoked immediately,
                 // so use setImmediate to prevent locking on deep structures.
                 setImmediate(() => handle.subscribe(this.onDocumentUpdate))
-            } else if (Url.isHyperfileUrl(url)) {
+            } else if (HyperUrl.isHyperfileUrl(url)) {
                 // We don't need to subscribe to hyperfile updates, we just need to swarm
                 this.files.add(url)
                 setImmediate(() => this.repo.readFile(url, (data, mimetype) => {
@@ -40,14 +49,18 @@ export class FarmPeer {
         }
     }
 
+    shouldSwarm = (val: any) => {
+        return HyperUrl.isHyperUrl(val) || FarmUrl.isFarmUrl(val)
+    }
+
     onDocumentUpdate = (doc: any) => {
-        const urls = Traverse.iterativeDFS<string>(doc, Url.isUrl)
-        urls.forEach(this.ensureDocumentIsSwarmed)
+        const urls = Traverse.iterativeDFS<string>(doc, this.shouldSwarm)
+        urls.forEach(this.swarm)
     }
 
     isSwarming = (url: string): boolean => {
         // TODO: Shouldn't have to figure out the discovery key here, hypermerge should do it.
-        const discoveryKey = Url.toDiscoveryKey(url)
+        const discoveryKey = HyperUrl.toDiscoveryKey(url)
         // TODO: repo should expose an interface for this.
         return this.repo.back.joined.has(discoveryKey)
     }
