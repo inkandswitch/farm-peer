@@ -46,7 +46,7 @@ export class FarmPeer {
                 this.handles.set(url, handle)
                 // The `subscribe` callback may be invoked immediately,
                 // so use setImmediate to prevent locking on deep structures.
-                setImmediate(() => handle.subscribe(this.onDocumentUpdate))
+                setImmediate(() => handle.subscribe(this.onDocumentUpdate(url)))
             } else if (HyperUrl.isHyperfileUrl(url)) {
                 // We don't need to subscribe to hyperfile updates, we just need to swarm
                 this.files.add(url)
@@ -61,9 +61,12 @@ export class FarmPeer {
         return HyperUrl.isHyperUrl(val) || FarmUrl.isFarmUrl(val)
     }
 
-    onDocumentUpdate = (doc: any) => {
-        const urls = Traverse.iterativeDFS<string>(doc, this.shouldSwarm)
-        urls.forEach(this.swarm)
+    onDocumentUpdate = (url: string) => {
+        return (doc: any) => {
+            debug(`Update for ${url}`)
+            const urls = Traverse.iterativeDFS<string>(doc, this.shouldSwarm)
+            urls.forEach(this.swarm)
+        }
     }
 
     isSwarming = (url: string): boolean => {
