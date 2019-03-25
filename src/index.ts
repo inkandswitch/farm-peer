@@ -1,8 +1,8 @@
 import { Repo } from "hypermerge/dist/Repo"
 import raf from "random-access-file"
-//import discoverySwarm from "discovery-swarm"
-//import datDefaults from "dat-swarm-defaults
-import discoveryCloud from "discovery-cloud-client"
+import discoverySwarm from "discovery-swarm"
+import datDefaults from "dat-swarm-defaults"
+//import discoveryCloud from "discovery-cloud-client"
 import * as FarmPeer from "./FarmPeer"
 import * as HyperUrl from "./HyperUrl"
 
@@ -30,14 +30,14 @@ if (typeof rootDataUrl === "undefined" || !HyperUrl.isHyperUrl(rootDataUrl)) {
 const storagePath = process.env.REPO_ROOT || "./.data"
 const repo = new Repo({ storage: raf, path: storagePath })
 repo.replicate(
-    /*discoverySwarm(
+    discoverySwarm(
       datDefaults({
         port: 0,
         id: repo.id,
         stream: repo.stream,
       }),
-    ),*/
-    new discoveryCloud({url: "wss://discovery-cloud.herokuapp.com", id: repo.id, stream: repo.stream})
+    ),
+    //new discoveryCloud({url: "wss://discovery-cloud.herokuapp.com", id: repo.id, stream: repo.stream})
 )
 
 
