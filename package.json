@@ -7,8 +7,8 @@
   "license": "BSD",
   "private": true,
   "scripts": {
-    "farm-peer": "yarn build && node ./dist/index.js",
-    "farm-peer-inspect": "yarn build && node --inspect-brk ./dist/index.js",
+    "start": "yarn build && node ./dist/index.js",
+    "start:inspect": "yarn build && node --inspect-brk ./dist/index.js",
     "build": "tsc -p ."
   },
   "dependencies": {
