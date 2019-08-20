@@ -1,6 +1,6 @@
 # pushpin-peer
 
-A cloud peer for pushpin to keep data warm while your computer is sleeping.
+A cloud peer for [pushpin](https://github.com/inkandswitch/pushpin) to keep data warm while your computer is sleeping.
 
 ## Usage
 
