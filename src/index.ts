@@ -58,19 +58,23 @@ console.log(`Storage Peer Url: ${pushpinUrl}`)
 function getRootDoc(repo: Repo) {
   return getOrCreateFromFile(ROOT_DOC_PATH, () => {
     const device = createDevice()
-    return repo.create((doc: StorageDoc) => {
+    const url = repo.create()
+    repo.change(url, (doc: any) => {
       doc.name = "Storage Peer"
       doc.device = device
       doc.archivedUrls = {}
     })
+    return url
   })
 }
 
 function createDevice() {
-  return repo.create((doc: DeviceDoc) => {
+  const url = repo.create()
+  repo.change(url, (doc: any) => {
     doc.name = "Storage Peer"
-    doc.icon = "fa-desktop"
+    doc.icon = "cloud"
   })
+  return url
 }
 
 function getOrCreateFromFile(file: string, create: Function) {
