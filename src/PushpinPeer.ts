@@ -24,7 +24,6 @@ export class PushpinPeer {
     return {
       documents: this.handles.size,
       files: this.files.size,
-      joined: this.repo.back.joined.size,
     }
   }
 
@@ -49,7 +48,7 @@ export class PushpinPeer {
         // We don't need to subscribe to hyperfile updates, we just need to swarm
         this.files.add(url)
         setImmediate(() =>
-          this.repo.readFile(url, (data, mimetype) => {
+          this.repo.files.read(url as any).then(() => {
             debug(`Read file ${url}`)
           }),
         )
@@ -67,13 +66,6 @@ export class PushpinPeer {
       const urls = Traverse.iterativeDFS<string>(doc, this.shouldSwarm)
       urls.forEach(this.swarm)
     }
-  }
-
-  isSwarming = (url: string): boolean => {
-    // TODO: Shouldn't have to figure out the discovery key here, hypermerge should do it.
-    const discoveryKey = HyperUrl.toDiscoveryKey(url)
-    // TODO: repo should expose an interface for this.
-    return this.repo.back.joined.has(discoveryKey)
   }
 
   close = () => {
