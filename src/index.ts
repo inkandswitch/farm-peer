@@ -6,6 +6,7 @@ import * as PushpinPeer from "./PushpinPeer"
 import * as PushpinUrl from "./PushpinUrl"
 import fs from "fs"
 import path from "path"
+import { DocUrl } from "hypermerge"
 
 const STORAGE_PATH = process.env.REPO_ROOT || "./.data"
 const REPO_PATH = path.join(STORAGE_PATH, "hypermerge")
@@ -29,18 +30,22 @@ const swarm = new DiscoverySwarm({
 repo.setSwarm(swarm as any)
 repo.startFileServer("/tmp/storage-peer.sock")
 
-interface StorageDoc {
+// TODO: we already define this in Pushpin, strange to define it twice.
+interface RootDoc {
   name: string
-  device: string
-  archivedUrls: {
+  icon: string
+  storedUrls: {
     [contactId: string]: string
   }
 }
 
-// TODO: we already define this in Pushpin, strange to define it twice.
-interface DeviceDoc {
+interface ContactDoc {
   name: string
-  icon: string
+  color: string
+  avatarDocId: string
+  hypermergeUrl: string // Used by workspace
+  offeredUrls?: { [url: string]: string[] } // Used by share, a map of contact id to documents offered.
+  devices?: string[]
 }
 
 //const deviceUrl = getDevice(repo)
@@ -49,6 +54,7 @@ const rootDataUrl = getRootDoc(repo)
 // PushpinPeer init
 const pushpinPeer = new PushpinPeer.PushpinPeer(repo)
 pushpinPeer.swarm(rootDataUrl)
+heartbeatAll(repo, rootDataUrl)
 
 const pushpinUrl = PushpinUrl.createDocumentLink("storage-peer", rootDataUrl)
 
@@ -57,24 +63,14 @@ console.log(`Storage Peer Url: ${pushpinUrl}`)
 // Create necessary root documents
 function getRootDoc(repo: Repo) {
   return getOrCreateFromFile(ROOT_DOC_PATH, () => {
-    const device = createDevice()
     const url = repo.create()
     repo.change(url, (doc: any) => {
       doc.name = "Storage Peer"
-      doc.device = device
-      doc.archivedUrls = {}
+      doc.icon = "cloud"
+      doc.storedUrls = {}
     })
     return url
   })
-}
-
-function createDevice() {
-  const url = repo.create()
-  repo.change(url, (doc: any) => {
-    doc.name = "Storage Peer"
-    doc.icon = "cloud"
-  })
-  return url
 }
 
 function getOrCreateFromFile(file: string, create: Function) {
@@ -86,4 +82,46 @@ function getOrCreateFromFile(file: string, create: Function) {
     fs.writeFileSync(file, content)
     return content
   }
+}
+
+interface HeartbeatMessage {
+  contact: string
+  device: string
+  heartbeat?: boolean
+  departing?: boolean
+  data?: any
+}
+
+function heartbeatAll(repo: Repo, rootUrl: DocUrl) {
+  const interval = setInterval(() => {
+    repo.doc(rootUrl, (root: RootDoc) => {
+      // Heartbeat on all stored contacts
+      Object.keys(root.storedUrls).forEach(contactId => {
+        const msg = {
+          contact: contactId,
+          device: rootUrl,
+          hearbeat: true,
+          data: {
+            [contactId]: {
+              onlineStatus: {},
+            },
+          },
+        }
+        repo.message(contactId as DocUrl, msg)
+      })
+
+      // Heartbeat on pushpin-peer device.
+      const message = {
+        contact: rootUrl,
+        device: rootUrl,
+        heartbeat: true,
+        data: {
+          [rootUrl]: {
+            onlineStatus: {},
+          },
+        },
+      }
+      repo.message(rootUrl, message)
+    })
+  }, 1000)
 }
